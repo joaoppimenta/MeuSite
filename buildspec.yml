@@ -1,0 +1,39 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      # Instalar o Docker no ambiente de build (se não estiver presente)
+      - echo "Instalando Docker"
+      - yum install -y docker
+      - service docker start
+      - docker --version
+
+  pre_build:
+    commands:
+      # Login no Docker Hub (ou no seu repositório privado, se necessário)
+      - echo "Fazendo login no Docker Hub"
+      - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+
+  build:
+    commands:
+      # Construir a imagem Docker
+      - echo "Construindo a imagem Docker"
+      - docker build -t meuapp:latest .
+
+  post_build:
+    commands:
+      # Aqui você pode, por exemplo, enviar a imagem para um repositório Docker, como o ECR
+      - echo "Fazendo push da imagem para o repositório Docker"
+      - docker tag meuapp:latest $DOCKER_REPO_URI:latest
+      - docker push $DOCKER_REPO_URI:latest
+
+artifacts:
+  files:
+    - '**/*'
+  base-directory: ./out
+
+cache:
+  paths:
+    - '/root/.m2/**/*'
+    - '/root/.gradle/**/*'
