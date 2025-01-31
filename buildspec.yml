@@ -26,4 +26,8 @@ phases:
       - echo "Subindo a imagem para o ECR"
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPOSITORY_NAME:$IMAGE_TAG
 
-
+artifacts:
+    files:
+    - imagedefinitions.json
+    
+    
