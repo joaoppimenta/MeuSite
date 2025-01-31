@@ -1,39 +1,35 @@
 version: 0.2
+env:
+  variables:
+    AWS_REGION: "us-east-1"  # Substitua pela sua região
+    AWS_ACCOUNT_ID: "586794446862"  # Substitua pelo ID da sua conta AWS
+    REPOSITORY_NAME: "meusite"  # Nome do repositório ECR
+    IMAGE_TAG: "latest"  # Ou use a variável CODEBUILD_RESOLVED_SOURCE_VERSION para um hash de commit
 
 phases:
-  install:
+  pre-build:
     commands:
-      # Instalar o Docker no ambiente de build (se não estiver presente)
-      - echo "Instalando Docker"
-      - yum install -y docker
-      - service docker start
-      - docker --version
-
-  pre_build:
-    commands:
-      # Login no Docker Hub (ou no seu repositório privado, se necessário)
-      - echo "Fazendo login no Docker Hub"
-      - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-
+      - echo "Login ECR"
+      - aws --version
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+      - REPOSITORY_URI=586794446862.dkr.ecr.us-east-1.amazonaws.com/meusite
+           
   build:
     commands:
-      # Construir a imagem Docker
       - echo "Construindo a imagem Docker"
-      - docker build -t meuapp:latest .
+      - docker build -t $REPOSITORY_NAME:$IMAGE_TAG .
+      - docker tag $REPOSITORY_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPOSITORY_NAME:$IMAGE_TAG
 
+      
   post_build:
     commands:
-      # Aqui você pode, por exemplo, enviar a imagem para um repositório Docker, como o ECR
-      - echo "Fazendo push da imagem para o repositório Docker"
-      - docker tag meuapp:latest $DOCKER_REPO_URI:latest
-      - docker push $DOCKER_REPO_URI:latest
+      - echo "Gerando o arquivo imagedefinitions.json..."
+      - printf '[{"name":"meusite", "imageUri":"%s.dkr.ecr.%s.amazonaws.com/%s:%s" } ]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+      - cat imagedefinitions.json
+      - echo "Subindo a imagem para o ECR"
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPOSITORY_NAME:$IMAGE_TAG
 
 artifacts:
   files:
-    - '**/*'
-  base-directory: ./out
-
-cache:
-  paths:
-    - '/root/.m2/**/*'
-    - '/root/.gradle/**/*'
+    - imagedefinitions.json
+  
