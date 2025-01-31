@@ -23,13 +23,11 @@ phases:
       
   post_build:
     commands:
-      - echo "Gerando o arquivo imagedefinitions.json..."
-      - printf '[{"name":"meusite", "imageUri":"%s.dkr.ecr.%s.amazonaws.com/%s:%s" } ]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
-      - cat imagedefinitions.json
       - echo "Subindo a imagem para o ECR"
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPOSITORY_NAME:$IMAGE_TAG
 
 artifacts:
-  files: imagedefinitions.json
-   # -  ./output/**
+    files:
+    - build/**/*
+    - appspec.yml
     
