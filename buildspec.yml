@@ -7,7 +7,7 @@ env:
     IMAGE_TAG: "latest"  # Ou use a variável CODEBUILD_RESOLVED_SOURCE_VERSION para um hash de commit
 
 phases:
-  pre-build:
+  pre_build:
     commands:
       - echo "Login ECR"
       - aws --version
