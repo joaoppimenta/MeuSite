@@ -7,7 +7,7 @@ env:
     IMAGE_TAG: "latest"  # Ou use a variável CODEBUILD_RESOLVED_SOURCE_VERSION para um hash de commit
 
 phases:
-  pre_build:
+  pre-build:
     commands:
       - echo "Login ECR"
       - aws --version
@@ -23,11 +23,12 @@ phases:
       
   post_build:
     commands:
+      - echo "Gerando o arquivo imagedefinitions.json..."
+      - printf '[{"name":"meusite", "imageUri":"%s.dkr.ecr.%s.amazonaws.com/%s:%s" } ]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+      - cat imagedefinitions.json
       - echo "Subindo a imagem para o ECR"
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPOSITORY_NAME:$IMAGE_TAG
 
 artifacts:
-    files:
+  files:
     - imagedefinitions.json
-    
-    
