@@ -1,0 +1,9 @@
+version: 0.0
+ Resources:
+   - TargetService:
+       Type: AWS::ECS::Service
+       Properties:
+       TaskDefinition: "arn:aws:ecs:us-east-1:586794446862:task-definition/meusite:2"
+       LoadBalancerInfo:
+          ContainerName: "meusite"
+          ContainerPort: 80
