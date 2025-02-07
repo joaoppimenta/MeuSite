@@ -9,7 +9,7 @@ env:
 phases:
   install:
     runtime-versions:
-      dotnet: 6.0  # Se estiver usando o .NET 6, ou ajuste conforme a versão
+      dotnet: 3.1  # Se estiver usando o .NET 6, ou ajuste conforme a versão
     commands:
       - echo "Instalando dependências e ferramentas..."
       - aws --version
