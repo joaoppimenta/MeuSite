@@ -4,7 +4,7 @@ env:
     AWS_REGION: "us-east-1"
     AWS_ACCOUNT_ID: "586794446862"
     REPOSITORY_NAME: "meusite"
-    IMAGE_TAG: "latest"
+    IMAGE_TAG: "$(git rev-parse --short HEAD)"  # Usando o hash do commit como tag única
 
 phases:
   install:
@@ -26,12 +26,11 @@ phases:
 
   build:
     commands:
-      - TAG=$(git rev-parse --short HEAD)
       - echo "Compilando e publicando o aplicativo .NET..."
       - ~/.dotnet/dotnet publish -c Release -o out
-      - echo "Construindo a imagem Docker..."
-      - docker build -t $REPOSITORY_NAME:$IMAGE_TAG .
-      - docker tag $REPOSITORY_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPOSITORY_NAME:$IMAGE_TAG
+      - echo "Construindo a imagem Docker com tag $IMAGE_TAG..."
+      - docker build -t $REPOSITORY_NAME:$IMAGE_TAG .  # Usando a tag única do commit
+      - docker tag $REPOSITORY_NAME:$IMAGE_TAG $REPOSITORY_URI:$IMAGE_TAG
 
   post_build:
     commands:
@@ -39,7 +38,7 @@ phases:
       - printf '[{"name":"meusite", "imageUri":"%s.dkr.ecr.%s.amazonaws.com/%s:%s" } ]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
       - cat imagedefinitions.json
       - echo "Subindo a imagem para o ECR..."
-      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPOSITORY_NAME:$IMAGE_TAG
+      - docker push $REPOSITORY_URI:$IMAGE_TAG  # Push da imagem com a tag única
 
 artifacts:
   files:
