@@ -26,6 +26,7 @@ phases:
 
   build:
     commands:
+      - TAG=$(git rev-parse --short HEAD)
       - echo "Compilando e publicando o aplicativo .NET..."
       - ~/.dotnet/dotnet publish -c Release -o out
       - echo "Construindo a imagem Docker..."
