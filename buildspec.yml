@@ -13,9 +13,8 @@ phases:
       - aws --version
       - echo "Instalando Docker..."
       - yum install docker -y
-      - service docker start
-      - echo "Baixando e instalando o .NET Core SDK 3.1"
-      - curl -sSL https://dotnet.microsoft.com/download/dotnet-core/scripts/v1/dotnet-install.sh | bash /dev/stdin --channel 3.1
+      - echo "Iniciando o Docker..."
+      - nohup dockerd &  # Inicia o Docker em segundo plano
 
   pre_build:
     commands:
