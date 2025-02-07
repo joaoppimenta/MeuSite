@@ -9,10 +9,13 @@ env:
 phases:
   install:
     runtime-versions:
-      dotnet: 3.1  # Se estiver usando o .NET 6, ou ajuste conforme a versão
+      dotnet: 3.1  # Usando o .NET Core 3.1
     commands:
       - echo "Instalando dependências e ferramentas..."
       - aws --version
+      - echo "Instalando Docker..."
+      - yum install docker -y
+      - service docker start
 
   pre_build:
     commands:
@@ -24,11 +27,11 @@ phases:
 
   build:
     commands:
-      - echo "Compilando o aplicativo .NET..."
-      - dotnet publish -c Release -o out
+      - echo "Compilando e publicando o aplicativo .NET..."
+      - dotnet publish -c Release -o out  # Gera os arquivos para a pasta "out"
       - echo "Construindo a imagem Docker..."
-      - docker build -t $REPOSITORY_NAME:$IMAGE_TAG .
-      - docker tag $REPOSITORY_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPOSITORY_NAME:$IMAGE_TAG
+      - docker build -t $REPOSITORY_NAME:$IMAGE_TAG .  # Cria a imagem Docker usando o Dockerfile
+      - docker tag $REPOSITORY_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPOSITORY_NAME:$IMAGE_TAG  # Marca a imagem com o repositório ECR
 
   post_build:
     commands:
@@ -40,4 +43,4 @@ phases:
 
 artifacts:
   files:
-    - imagedefinitions.json
+    - imagedefinitions.json  # Artefato para usar em outras fases (como ECS ou EKS)
