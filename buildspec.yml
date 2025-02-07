@@ -23,16 +23,16 @@ phases:
       - echo "Compilando e publicando o aplicativo .NET..."
       - ~/.dotnet/dotnet publish -c Release -o out
       - echo "Construindo a imagem Docker..."
-      - docker build -t meusite:$(git rev-parse --short HEAD) .
-      - docker tag meusite:$(git rev-parse --short HEAD) 586794446862.dkr.ecr.us-east-1.amazonaws.com/meusite:$(git rev-parse --short HEAD)
+      - docker build -t meusite:latest .
+      - docker tag meusite:latest 586794446862.dkr.ecr.us-east-1.amazonaws.com/meusite:latest
 
   post_build:
     commands:
       - echo "Gerando o arquivo imagedefinitions.json..."
-      - printf '[{"name":"meusite", "imageUri":"586794446862.dkr.ecr.us-east-1.amazonaws.com/meusite:%s" } ]' $(git rev-parse --short HEAD) > imagedefinitions.json
+      - printf '[{"name":"meusite", "imageUri":"586794446862.dkr.ecr.us-east-1.amazonaws.com/meusite:latest" } ]' > imagedefinitions.json
       - cat imagedefinitions.json
       - echo "Subindo a imagem para o ECR..."
-      - docker push 586794446862.dkr.ecr.us-east-1.amazonaws.com/meusite:$(git rev-parse --short HEAD)
+      - docker push 586794446862.dkr.ecr.us-east-1.amazonaws.com/meusite:latest
 
 artifacts:
   files:
