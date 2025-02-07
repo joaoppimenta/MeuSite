@@ -7,26 +7,35 @@ env:
     IMAGE_TAG: "latest"  # Ou use a variável CODEBUILD_RESOLVED_SOURCE_VERSION para um hash de commit
 
 phases:
+  install:
+    runtime-versions:
+      dotnet: 6.0  # Se estiver usando o .NET 6, ou ajuste conforme a versão
+    commands:
+      - echo "Instalando dependências e ferramentas..."
+      - aws --version
+
   pre_build:
     commands:
-      - echo "Login ECR"
-      - aws --version
+      - echo "Login no ECR"
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-      - REPOSITORY_URI=586794446862.dkr.ecr.us-east-1.amazonaws.com/meusite
-           
+      - REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPOSITORY_NAME
+      - echo "Restaurando dependências do projeto .NET..."
+      - dotnet restore
+
   build:
     commands:
-      - echo "Construindo a imagem Docker"
+      - echo "Compilando o aplicativo .NET..."
+      - dotnet publish -c Release -o out
+      - echo "Construindo a imagem Docker..."
       - docker build -t $REPOSITORY_NAME:$IMAGE_TAG .
       - docker tag $REPOSITORY_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPOSITORY_NAME:$IMAGE_TAG
 
-      
   post_build:
     commands:
       - echo "Gerando o arquivo imagedefinitions.json..."
       - printf '[{"name":"meusite", "imageUri":"%s.dkr.ecr.%s.amazonaws.com/%s:%s" } ]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
       - cat imagedefinitions.json
-      - echo "Subindo a imagem para o ECR"
+      - echo "Subindo a imagem para o ECR..."
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPOSITORY_NAME:$IMAGE_TAG
 
 artifacts:

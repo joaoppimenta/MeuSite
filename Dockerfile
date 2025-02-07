@@ -1,20 +1,12 @@
-# Use a imagem de runtime do .NET Core
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS build
+# Use a imagem de runtime do .NET para executar a aplicação
+FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS runtime
 WORKDIR /app
 
-# Copie o arquivo csproj e restaura as dependências
-COPY *.csproj ./
-RUN dotnet restore
+# Copie os arquivos compilados (gerados no buildspec.yml) para o diretório /app
+COPY out ./
 
-# Copie o resto do código e compila
-COPY . ./
-RUN dotnet publish -c Release -o out
-
-# Construa a imagem de runtime
-FROM mcr.microsoft.com/dotnet/core/aspnet:3.1 AS runtime
-WORKDIR /app
-COPY --from=build /app/out ./
-
-# Expõe a porta e inicia o aplicativo
+# Exponha a porta em que o aplicativo ASP.NET vai rodar
 EXPOSE 80
+
+# Defina o ponto de entrada para o aplicativo
 ENTRYPOINT ["dotnet", "MeuSite.dll"]
