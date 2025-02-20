@@ -8,8 +8,7 @@ phases:
       - echo "Instalando Docker..."
       - yum install docker -y
       - echo "Iniciando o Docker..."
-      - nohup dockerd &  # Inicia o Docker em segundo plano
-
+     
   pre_build:
     commands:
       - echo "Login no ECR"
